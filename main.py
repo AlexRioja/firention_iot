@@ -47,8 +47,8 @@ telemetry_lake_1={
     "name":lakes[0].name,
     "latitude":lakes[0].latitude,
     "longitude":lakes[0].longitude,
-    "value":lakes[0].current_water_hm3,
-    "value_max":lakes[0].current_water_percentage,
+    "value":lakes[0].current_water,
+    "value_max":lakes[0].capacity,
     "percentage":lakes[0].percentage
 }
 

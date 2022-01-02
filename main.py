@@ -43,9 +43,26 @@ for lake in lakes:
     lake.current_water=current_water_hm3
 
 
+telemetry_lake_1={
+    "name":lakes[0].name,
+    "latitude":lakes[0].latitude,
+    "longitude":lakes[0].longitude,
+    "value":lakes[0].current_water_hm3,
+    "value_max":lakes[0].current_water_percentage,
+    "percentage":lakes[0].percentage
+}
 
-
-
+client = TBDeviceMqttClient("srv-iot.diatel.upm.es", port=8883, token="vYMOLNl8lVqzKNchyVYf")
+# Connect to ThingsBoard
+client.connect(tls=True)
+# Sending telemetry without checking the delivery status
+client.send_telemetry(telemetry_lake_1) 
+# Sending telemetry and checking the delivery status (QoS = 1 by default)
+result = client.send_telemetry(telemetry_lake_1)
+# get is a blocking call that awaits delivery status  
+success = result.get() == TBPublishInfo.TB_ERR_SUCCESS
+# Disconnect from ThingsBoard
+client.disconnect()
 
 
 

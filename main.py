@@ -52,11 +52,11 @@ telemetry_lake_1={
     "percentage":lakes[0].percentage
 }
 
-telemetry_lake_1 = {"temperature": 41.9}
+#telemetry_lake_1 = {"temperature": 40.9}
 
-client = TBDeviceMqttClient("srv-iot.diatel.upm.es", port=8883, token="lcErj5SmOXvXlTy6LeCV")
+#client = TBDeviceMqttClient("srv-iot.diatel.upm.es", port=8883, token="lcErj5SmOXvXlTy6LeCV")
 
-#client = TBDeviceMqttClient("srv-iot.diatel.upm.es", port=8883, token="vYMOLNl8lVqzKNchyVYf")
+client = TBDeviceMqttClient("srv-iot.diatel.upm.es", port=8883, token="vYMOLNl8lVqzKNchyVYf")
 # Connect to ThingsBoard
 client.connect(tls=True)
 # Sending telemetry without checking the delivery status
@@ -68,7 +68,7 @@ success = result.get() == TBPublishInfo.TB_ERR_SUCCESS
 # Disconnect from ThingsBoard
 client.disconnect()
 
-
+print("Finished!")
 
 
 

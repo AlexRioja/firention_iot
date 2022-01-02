@@ -1,0 +1,82 @@
+{
+    "lakes": [
+        {
+            "name": "El Atazar",
+            "latitude": "40.909686",
+            "longitude": " -3.518307",
+            "link": "https://www.embalses.net/pantano-908-el-atazar.html"
+        },
+        {
+            "name": "El Pardo",
+            "latitude": "40.557635",
+            "longitude": " -3.788824",
+            "link": "https://www.embalses.net/pantano-1045-el-pardo.html"
+        },
+        {
+            "name": "El Villar",
+            "latitude": "40.970907",
+            "longitude": " -3.5628",
+            "link": "https://www.embalses.net/pantano-1219-el-villar.html"
+        },
+        {
+            "name": "La Jarosa",
+            "latitude": "40.667643",
+            "longitude": " -4.122995",
+            "link": "https://www.embalses.net/pantano-999-la-jarosa.html"
+        },
+        {
+            "name": "Navacerrada",
+            "latitude": "40.71925",
+            "longitude": "-4.007885",
+            "link": "https://www.embalses.net/pantano-1026-navacerrada.html"
+        },
+        {
+            "name": "Pedrezuela",
+            "latitude": "40.772969",
+            "longitude": " -3.647214",
+            "link": "https://www.embalses.net/pantano-1046-pedrezuela.html"
+        },
+        {
+            "name": "Picadas",
+            "latitude": "40.334543",
+            "longitude": " -4.250239",
+            "link": "https://www.embalses.net/pantano-1054-picadas.html"
+        },
+        {
+            "name": "Pinilla",
+            "latitude": "40.937945",
+            "longitude": " -3.796989",
+            "link": "https://www.embalses.net/pantano-1057-pinilla.html"
+        },
+        {
+            "name": "Puentes Viejas",
+            "latitude": "40.996403",
+            "longitude": " -3.598387",
+            "link": "https://www.embalses.net/pantano-1067-puentes-viejas.html"
+        },
+        {
+            "name": "Riosequillo",
+            "latitude": "40.977306138896914",
+            "longitude": "-3.66668701171875",
+            "link": "https://www.embalses.net/pantano-1072-riosequillo.html"
+        },
+        {
+            "name": "San Juan",
+            "latitude": "40.37707",
+            "longitude": " -4.320245",
+            "link": "https://www.embalses.net/pantano-1178-san-juan.html"
+        },
+        {
+            "name": "Santillana",
+            "latitude": "40.72495",
+            "longitude": " -3.830667",
+            "link": "https://www.embalses.net/pantano-1013-santillana.html"
+        },
+        {
+            "name": "Valmayor",
+            "latitude": "40.550991",
+            "longitude": "-4.055918",
+            "link": "https://www.embalses.net/pantano-1212-valmayor.html"
+        }
+    ]
+}

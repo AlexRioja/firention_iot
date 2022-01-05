@@ -1,9 +1,12 @@
 from os import curdir
-from tb_device_mqtt import TBDeviceMqttClient, TBPublishInfo
+import ssl
+from tb_device_mqtt import ProvisionClient, TBDeviceMqttClient, TBPublishInfo
 import json
 from bs4 import BeautifulSoup
 import requests
 import utils
+from device_provision_improved import ProvisionClient as PC
+import device_provision_improved as dev_prov_imp
 
 lakes=[]
 
@@ -43,30 +46,76 @@ for lake in lakes:
     lake.current_water=current_water_hm3
 
 
-telemetry_lake_1={
-    "name":lakes[0].name,
-    "latitude":lakes[0].latitude,
-    "longitude":lakes[0].longitude,
-    "value":lakes[0].current_water,
-    "value_max":lakes[0].capacity,
-    "percentage":lakes[0].percentage
-}
 
-#telemetry_lake_1 = {"temperature": 40.9}
 
-#client = TBDeviceMqttClient("srv-iot.diatel.upm.es", port=8883, token="lcErj5SmOXvXlTy6LeCV")
 
-client = TBDeviceMqttClient("srv-iot.diatel.upm.es", port=8883, token="vYMOLNl8lVqzKNchyVYf")
-# Connect to ThingsBoard
-client.connect(tls=True)
-# Sending telemetry without checking the delivery status
-client.send_telemetry(telemetry_lake_1) 
-# Sending telemetry and checking the delivery status (QoS = 1 by default)
-result = client.send_telemetry(telemetry_lake_1)
-# get is a blocking call that awaits delivery status  
-success = result.get() == TBPublishInfo.TB_ERR_SUCCESS
-# Disconnect from ThingsBoard
-client.disconnect()
+
+
+def on_tb_connected(client, userdata, flags, rc):  # Callback for connect with received credentials
+    if rc == 0:
+        print("[ThingsBoard client] Connected to ThingsBoard with credentials: %s" % client._username.decode())
+    else:
+        print("[ThingsBoard client] Cannot connect to ThingsBoard!, result: %s" % dev_prov_imp.RESULT_CODES[rc])
+
+
+i=0
+for lake in lakes:
+    try:
+        #1.Create a lake device on the ThingsBoard platforms, all belongs to Firention_Lakes_Heroku profile
+        provision_req_1={
+        "deviceName": "Firention_Lake_"+str(i),
+        "provisionDeviceKey": "s9dvyunb5bgsqc0xi793",
+        "provisionDeviceSecret": "1g0m49f26wvzpn9lzhwz"
+        }
+        provision_client=PC("srv-iot.diatel.upm.es", port=8883, provision_request=provision_req_1, credentials="cred_"+str(i))
+        provision_client.tls_set_context(ssl.create_default_context())
+        provision_client.provision()  # Request provisioned data
+
+        #2.Send telemetry of the lake
+        telemetry_lake={
+            "name":lake.name,
+            "latitude":lake.latitude,
+            "longitude":lake.longitude,
+            "value":lake.current_water,
+            "value_max":lake.capacity,
+            "percentage":lake.percentage
+        }
+
+        client = TBDeviceMqttClient("srv-iot.diatel.upm.es", port=8883, token=utils.read_cred(i))
+        # Connect to ThingsBoard
+        client.connect(tls=True)
+        # Sending telemetry without checking the delivery status
+        client.send_telemetry(telemetry_lake) 
+        # Sending telemetry and checking the delivery status (QoS = 1 by default)
+        result = client.send_telemetry(telemetry_lake)
+        # get is a blocking call that awaits delivery status  
+        success = result.get() == TBPublishInfo.TB_ERR_SUCCESS
+        # Disconnect from ThingsBoard
+        client.disconnect()
+    except:
+        print("Device already created!, provisioning only attributes!!!")
+           #2.Send telemetry of the lake
+        telemetry_lake={
+            "name":lake.name,
+            "latitude":lake.latitude,
+            "longitude":lake.longitude,
+            "value":lake.current_water,
+            "value_max":lake.capacity,
+            "percentage":lake.percentage
+        }
+
+        client = TBDeviceMqttClient("srv-iot.diatel.upm.es", port=8883, token=provision_client.cred)
+        # Connect to ThingsBoard
+        client.connect(tls=True)
+        # Sending telemetry without checking the delivery status
+        client.send_telemetry(telemetry_lake) 
+        # Sending telemetry and checking the delivery status (QoS = 1 by default)
+        result = client.send_telemetry(telemetry_lake)
+        # get is a blocking call that awaits delivery status  
+        success = result.get() == TBPublishInfo.TB_ERR_SUCCESS
+        # Disconnect from ThingsBoard
+        client.disconnect()
+    i+=1
 
 print("Finished!")
 

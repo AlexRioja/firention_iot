@@ -1,3 +1,9 @@
+"""
+This file connects to the https://www.embalses.net web-page and performs web scrapping to query the values of the different lakes in Madrid.
+It also creates new devices in ThingsBoard with the lake information.
+
+Should be called periodically (1 or 2 per day) to refresh information about water capacity in the lakes.
+"""
 from os import curdir
 import ssl
 from tb_device_mqtt import ProvisionClient, TBDeviceMqttClient, TBPublishInfo
@@ -11,7 +17,7 @@ import device_provision_improved as dev_prov_imp
 lakes=[]
 
 #1.Open File
-with open("lakes.json") as file:
+with open("data/lakes.json") as file:
     json_lakes=json.load(file)
 
 #2.Read contents
@@ -46,11 +52,6 @@ for lake in lakes:
     lake.current_water=current_water_hm3
 
 
-
-
-
-
-
 def on_tb_connected(client, userdata, flags, rc):  # Callback for connect with received credentials
     if rc == 0:
         print("[ThingsBoard client] Connected to ThingsBoard with credentials: %s" % client._username.decode())
@@ -67,7 +68,7 @@ for lake in lakes:
     "provisionDeviceKey": "s9dvyunb5bgsqc0xi793",
     "provisionDeviceSecret": "1g0m49f26wvzpn9lzhwz"
     }
-    provision_client=PC("srv-iot.diatel.upm.es", port=8883, provision_request=provision_req_1, credentials="cred_"+str(i))
+    provision_client=PC("srv-iot.diatel.upm.es", port=8883, provision_request=provision_req_1, credentials="generated/lakes/cred_"+str(i))
     provision_client.tls_set_context(ssl.create_default_context())
     provision_client.provision()  # Request provisioned data
 
@@ -81,7 +82,7 @@ for lake in lakes:
         "percentage":lake.percentage
     }
 
-    client = TBDeviceMqttClient("srv-iot.diatel.upm.es", port=8883, token=utils.read_cred(i))
+    client = TBDeviceMqttClient("srv-iot.diatel.upm.es", port=8883, token=utils.read_cred("generated/lakes/cred_"+str(i)))
     # Connect to ThingsBoard
     client.connect(tls=True)
     # Sending telemetry without checking the delivery status

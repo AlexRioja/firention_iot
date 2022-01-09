@@ -13,10 +13,10 @@ class Lake:
     def distance_to_point(point):
         raise ValueError("Mehtod not implemented yet")
     
-def read_cred(index):
+def read_cred(name):
     new_credentials = None
     try:
-        with open("cred_"+str(index), "r") as credentials_file:
+        with open(name, "r") as credentials_file:
             new_credentials = credentials_file.read()
     except Exception as e:
         print(e)

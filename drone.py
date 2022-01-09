@@ -1,0 +1,128 @@
+from os import curdir
+import ssl
+from time import sleep
+from tb_device_mqtt import ProvisionClient, TBDeviceMqttClient, TBPublishInfo
+import json
+import utils
+from device_provision_improved import ProvisionClient as PC
+import device_provision_improved as dev_prov_imp
+import math
+import numpy as np
+import random
+
+"""
+We are going to imagine that the station that detects strange things coordinates are:
+40.705257, -3.894895
+and the basestation is on:
+40.717419, -3.918600
+"""
+
+
+
+
+station_coord=[40.705257, -3.894895]
+drone_station_coord=[40.717419, -3.918600]
+drone_range=8.5
+
+def calculateDistance(x1, y1, x2, y2):
+    dist = math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
+    return dist
+def calculateCircunf(r,n=10):
+    return [(math.cos(2*math.pi/n*x)*r,math.sin(2*math.pi/n*x)*r) for x in range(0,n+1)]
+number=0
+#1.Provision drone instance in ThingsBoard
+provision_req_1={
+    "deviceName": "Firention_Drone_"+str(number),
+    "provisionDeviceKey": "6qc66koo2vds8gocfbjc",
+    "provisionDeviceSecret": "6yr5povhmdvab8c81rrf"
+    }
+
+provision_client=PC("srv-iot.diatel.upm.es", port=8883, provision_request=provision_req_1, credentials="generated/drones/cred_drone_"+str(number))
+provision_client.tls_set_context(ssl.create_default_context())
+provision_client.provision()
+
+#2.Calculate distance drone-station, to see if is possible
+distance=calculateDistance(station_coord[0],station_coord[1],drone_station_coord[0],drone_station_coord[1])*100
+print("Drone distance to the station is : "+str(round(distance, 2))+" km.")
+if distance>drone_range:
+    print("Location out of range!!!")
+    """
+    Send error, out of range
+    """
+
+#3.If possible, send the drone and communicate telemetry
+telemetry_drone={
+    "id":number,
+    "latitude":drone_station_coord[0],
+    "longitude":drone_station_coord[1],
+    "altitude":0,
+    "battery":100,
+    "flightMode":"Awaiting",
+    "isFireDetected":False
+}
+
+client = TBDeviceMqttClient("srv-iot.diatel.upm.es", port=8883, token=utils.read_cred("generated/drones/cred_drone_"+str(number)))
+# Connect to ThingsBoard
+client.connect(tls=True)
+# Sending telemetry without checking the delivery status
+client.send_telemetry(telemetry_drone) 
+# Sending telemetry and checking the delivery status (QoS = 1 by default)
+result = client.send_telemetry(telemetry_drone, 0)
+
+"""
+1.-Calculate midpoints between position and destination and go 1 by 1 travelling to the destination
+"""
+latitudes=np.linspace(drone_station_coord[0],station_coord[0],15)
+longitudes=np.linspace(drone_station_coord[1],station_coord[1],15)
+for i in range(len(latitudes)): #Go to location
+    telemetry_drone["altitude"]=random.randint(100,1000)/10
+    telemetry_drone["latitude"]=latitudes[i]
+    telemetry_drone["longitude"]=longitudes[i]
+    telemetry_drone["battery"]=telemetry_drone["battery"]-1
+    telemetry_drone["flightMode"]="GoingToLocation"
+    result = client.send_telemetry(telemetry_drone, 0)
+    # get is a blocking call that awaits delivery status  
+    sleep(1)
+"""
+2.-Patrol the surrounding area of the substation that has detected strange values
+"""
+telemetry_drone["flightMode"]="CheckingLocation"
+circunf_points=calculateCircunf(0.01,15)
+for i in range(15):#Patrol location
+    telemetry_drone["altitude"]=random.randint(100,1000)/10
+    telemetry_drone["latitude"]=station_coord[0]+circunf_points[i][0]
+    telemetry_drone["longitude"]=station_coord[1]+circunf_points[i][1]
+    telemetry_drone["battery"]=telemetry_drone["battery"]-1
+    result = client.send_telemetry(telemetry_drone, 0)
+    # get is a blocking call that awaits delivery status  
+    sleep(2)
+"""
+3.-Return to the drone station
+"""
+for i in range(len(latitudes)): #Go to location
+    telemetry_drone["altitude"]=random.randint(100,1000)/10
+    telemetry_drone["latitude"]=latitudes[len(latitudes)-1-i]
+    telemetry_drone["longitude"]=longitudes[len(latitudes)-1-i]
+    telemetry_drone["battery"]=telemetry_drone["battery"]-1
+    telemetry_drone["flightMode"]="ReturningToBase"
+    result = client.send_telemetry(telemetry_drone, 0)
+    # get is a blocking call that awaits delivery status  
+    sleep(1)
+"""
+4.-Reset drone when reaching station
+"""
+telemetry_drone={
+    "id":number,
+    "latitude":drone_station_coord[0],
+    "longitude":drone_station_coord[1],
+    "altitude":0,
+    "battery":100,
+    "flightMode":"Awaiting",
+    "isFireDetected":False
+}
+result = client.send_telemetry(telemetry_drone, 1)
+# get is a blocking call that awaits delivery status  
+success = result.get() == TBPublishInfo.TB_ERR_SUCCESS
+
+# Disconnect from ThingsBoard
+client.disconnect()

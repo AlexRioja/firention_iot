@@ -4,3 +4,4 @@ requests-unixsocket
 simplejson
 tb-mqtt-client
 tb-rest-client
+numpy

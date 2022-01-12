@@ -13,7 +13,7 @@ import requests
 import utils
 from device_provision_improved import ProvisionClient as PC
 import device_provision_improved as dev_prov_imp
-
+from tqdm import tqdm
 lakes=[]
 
 #1.Open File
@@ -24,9 +24,10 @@ with open("data/lakes.json") as file:
 for lake in json_lakes['lakes']:
     lakes.append(utils.Lake(lake["name"], lake["latitude"],lake["longitude"],lake["link"]))
 
+print("Collecting information about Lakes in Madrid...")
 #3.Obtain more information through web-scrapping
-for lake in lakes:
-    print("Scrapping info about-->"+lake.name)
+for lake in tqdm(lakes):
+    print("\tScrapping info about-->"+lake.name)
     page = requests.get(lake.link)
     lake_html=BeautifulSoup(page.content, "html.parser")
     try: #when real-time data is available
@@ -51,16 +52,10 @@ for lake in lakes:
     lake.percentage=current_water_percentage
     lake.current_water=current_water_hm3
 
-
-def on_tb_connected(client, userdata, flags, rc):  # Callback for connect with received credentials
-    if rc == 0:
-        print("[ThingsBoard client] Connected to ThingsBoard with credentials: %s" % client._username.decode())
-    else:
-        print("[ThingsBoard client] Cannot connect to ThingsBoard!, result: %s" % dev_prov_imp.RESULT_CODES[rc])
-
-
 i=0
-for lake in lakes:
+
+print("Updating new lakes values in ThingsBoard...")
+for lake in tqdm(lakes):
 
     #1.Create a lake device on the ThingsBoard platforms, all belongs to Firention_Lakes_Heroku profile
     provision_req_1={
@@ -96,7 +91,7 @@ for lake in lakes:
     
     i+=1
 
-print("Finished!")
+print("\nFinished!")
 
 
 

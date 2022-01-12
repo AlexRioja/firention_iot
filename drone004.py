@@ -97,14 +97,15 @@ for radius in [0.015, 0.032]:
     """
     2.-Patrol the surrounding area of the substation that has detected strange values
     """
-    telemetry_drone["flightMode"]="CheckingLocation"
+    telemetry_drone["drone_flightMode"]="CheckingLocation"
     for i in range(1,len(circunf_points)):#Patrol location
         telemetry_drone["drone_altitude"]=random.randint(100,1000)/10
         telemetry_drone["drone_latitude"]=station_coord[0]+circunf_points[i][0]
         telemetry_drone["drone_longitude"]=station_coord[1]+circunf_points[i][1]
         telemetry_drone["drone_battery"]=telemetry_drone["drone_battery"]-1
+        
         result = client.send_telemetry(telemetry_drone, 0)
-        #print(telemetry_drone)
+        print(telemetry_drone)
 
         # get is a blocking call that awaits delivery status  
         sleep(2)

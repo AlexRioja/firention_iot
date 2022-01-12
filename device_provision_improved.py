@@ -13,7 +13,7 @@ class ProvisionClient(Client):
     PROVISION_REQUEST_TOPIC = "/provision/request"
     PROVISION_RESPONSE_TOPIC = "/provision/response"
 
-    def __init__(self, host, port, provision_request,credentials="credentials"):
+    def __init__(self, host, port, provision_request,credentials="credentials", debug=False):
         super().__init__()
         self._host = host
         self._port = port
@@ -22,31 +22,32 @@ class ProvisionClient(Client):
         self.on_message = self.__on_message
         self.__provision_request = provision_request
         self.credentials=credentials
+        self.debug=debug
 
     def __on_connect(self, client, userdata, flags, rc):  # Callback for connect
         if rc == 0:
-            print("\t[Provisioning client] Connected to ThingsBoard ")
+            if self.debug: print("\t[Provisioning client] Connected to ThingsBoard ")
             client.subscribe(self.PROVISION_RESPONSE_TOPIC)  # Subscribe to provisioning response topic
             provision_request = dumps(self.__provision_request)
-            print("\t[Provisioning client] Sending provisioning request %s" % provision_request)
+            if self.debug: print("\t[Provisioning client] Sending provisioning request %s" % provision_request)
             client.publish(self.PROVISION_REQUEST_TOPIC, provision_request)  # Publishing provisioning request topic
         else:
-            print("\t[Provisioning client] Cannot connect to ThingsBoard!, result: %s" % RESULT_CODES[rc])
+            if self.debug: print("\t[Provisioning client] Cannot connect to ThingsBoard!, result: %s" % RESULT_CODES[rc])
 
     def __on_message(self, client, userdata, msg):
         decoded_payload = msg.payload.decode("UTF-8")
-        print("\t[Provisioning client] Received data from ThingsBoard: %s" % decoded_payload)
+        if self.debug: print("\t[Provisioning client] Received data from ThingsBoard: %s" % decoded_payload)
         decoded_message = loads(decoded_payload)
         provision_device_status = decoded_message.get("status")
         if provision_device_status == "SUCCESS":
             self.__save_credentials(decoded_message["credentialsValue"])
             self.cred=decoded_message["credentialsValue"]
         else:
-            print("\t[Provisioning client] Provisioning was unsuccessful with status %s and message: %s" % (provision_device_status, decoded_message["errorMsg"]))
+            if self.debug: print("\t[Provisioning client] Provisioning was unsuccessful with status %s and message: %s" % (provision_device_status, decoded_message["errorMsg"]))
         self.disconnect()
 
     def provision(self):
-        print("\t[Provisioning client] Connecting to ThingsBoard (provisioning client)")
+        if self.debug: print("\t[Provisioning client] Connecting to ThingsBoard (provisioning client)")
         
         self.connect(self._host, self._port, 60)
         self.loop_forever()
@@ -68,7 +69,7 @@ class ProvisionClient(Client):
             with open(self.credentials, "r") as credentials_file:
                 new_credentials = credentials_file.read()
         except Exception as e:
-            print(e)
+            print("Get Credentials:"+str(e))
         return new_credentials
 
     def __save_credentials(self, credentials):
@@ -76,6 +77,8 @@ class ProvisionClient(Client):
         with open(self.credentials, "w") as credentials_file:
             credentials_file.write(credentials)
 
-    @staticmethod
-    def __clean_credentials():
-        open("credentials", "w").close()
+    def __clean_credentials(self):
+        try:
+            open(self.credentials, "w").close()
+        except:
+            pass

@@ -9,25 +9,18 @@ import json
 import csv
 import numpy as np
 from tb_device_mqtt import TBDeviceMqttClient
-from tb_rest_client.rest_client_ce import *
-from tb_rest_client.rest import ApiException
+
 from device_provision_improved import ProvisionClient as PC
-import device_provision_improved as dev_prov_imp
 import utils
 import ssl
+import glob 
+import mini_rest_interface as tb_rest
+from tqdm import tqdm
 
-def delete_thingsBoard_device_by_id(url, id):
-    with RestClientCE(base_url=url) as rest_client:
-        try:
-            rest_client.delete_device(DeviceId('DEVICE', id))
-        except ApiException as e:
-            print("ERRROR WHILE DELETING DEVICE")
-
-
-
-
+print("Collecting information about NASA VIIRS detected fires in Spain...")
 res=requests.get("https://firms.modaps.eosdis.nasa.gov/api/country/csv/e3c1944690c80836c73b5dc5eb43cb89/VIIRS_SNPP_NRT/ESP/1/")
-print(res.text)
+print("\n\t--------------------INFORMATION RETRIEVED-------------------\n"+res.text)
+print("\t--------------------END OF INFORMATION RETRIEVED-------------------\n")
 
 res_json=[]
 csvR=csv.DictReader(res.text.split('\n'),delimiter=',')
@@ -53,20 +46,22 @@ for rows in csvR:
 with open("generated/extra/nasa_fire_info.json", "w") as f:
     json.dump(res_json,f)
 
-devices=None
-#checking the last values to delete
-with open('generated/extra/fire_nasa_devices.txt', 'r+') as f:
-    lines = f.readlines()
-    for line in lines:
-        devices=line.split(',')
-    if devices!=None:
-        for device in devices:
-            delete_thingsBoard_device_by_id("srv-iot.diatel.upm.es", device)
+print("Deleting previous fires in ThingsBoard...")
+#Deleting previous devices from control files
+for cred_file in tqdm(glob.glob('generated/extra/cred_*')):
+    new_credentials=None
+    try:
+        with open(cred_file, "r") as credentials_file:
+            new_credentials = credentials_file.read()
+    except Exception as e:
+        #print("Get Credentials:"+str(e))
+        pass
+    tb_rest.delete_device(new_credentials)
 
 #Adding new ones
 i=0
-
-for res in res_json:
+print("Updating with the new fires in ThingsBoard...")
+for res in tqdm(res_json):
     provision_req_1={
     "deviceName": "Firention_NASA_Fire_"+str(i),
     "provisionDeviceKey": "ohwkv3n5x0uawcewiylc",
@@ -83,4 +78,4 @@ for res in res_json:
     # Disconnect from ThingsBoard
     client.disconnect()
     i+=1
-print("Finished!")
+print("\nFinished!")

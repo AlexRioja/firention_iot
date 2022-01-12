@@ -4,4 +4,3 @@ requests-unixsocket
 simplejson
 tb-mqtt-client
 tqdm
-glob

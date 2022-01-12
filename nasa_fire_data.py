@@ -7,7 +7,6 @@ Should be called periodically to refresh information in thingsboard.
 import requests
 import json
 import csv
-import numpy as np
 from tb_device_mqtt import TBDeviceMqttClient
 
 from device_provision_improved import ProvisionClient as PC

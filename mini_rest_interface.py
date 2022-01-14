@@ -1,9 +1,10 @@
 import json
 import requests
+import config
 
 server="https://srv-iot.diatel.upm.es"
-user="a.mruiz@upm.es"
-password="TB_pass_2021"
+user=config.tb_user
+password=config.tb_pass
 
 
 

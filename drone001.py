@@ -78,7 +78,6 @@ longitudes=None
 for radius in [0.015, 0.032]:
     print(radius)
     circunf_points=calculateCircunf(radius,15)
-
     latitudes=np.linspace(station_coord[0],station_coord[0]+circunf_points[0][0],5)
     longitudes=np.linspace(station_coord[1],station_coord[1]+circunf_points[0][1],5)
     print(latitudes)

@@ -15,10 +15,16 @@ import ssl
 import glob 
 import mini_rest_interface as tb_rest
 from tqdm import tqdm
-import config
-
+import os
 print("Collecting information about NASA VIIRS detected fires in Spain...")
-res=requests.get("https://firms.modaps.eosdis.nasa.gov/api/country/csv/"+config.nasa_api_key+"/VIIRS_SNPP_NRT/ESP/1/")
+
+try:
+    import config
+    res=requests.get("https://firms.modaps.eosdis.nasa.gov/api/country/csv/"+config.nasa_api_key+"/VIIRS_SNPP_NRT/ESP/1/")
+
+except:
+    res=requests.get("https://firms.modaps.eosdis.nasa.gov/api/country/csv/"+os.environ['nasa_api_key']+"/VIIRS_SNPP_NRT/ESP/1/")
+
 print("\n\t--------------------INFORMATION RETRIEVED-------------------\n"+res.text)
 print("\t--------------------END OF INFORMATION RETRIEVED-------------------\n")
 

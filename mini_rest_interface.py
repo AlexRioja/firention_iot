@@ -1,10 +1,16 @@
 import json
 import requests
-import config
+import os
+try:
+    import config
+    user=config.tb_user
+    password=config.tb_pass
+except:
+    user=os.environ['tb_user']
+    password=os.environ['tb_pass']
 
 server="https://srv-iot.diatel.upm.es"
-user=config.tb_user
-password=config.tb_pass
+
 
 
 

@@ -21,3 +21,12 @@ def read_cred(name):
     except Exception as e:
         print(e)
     return new_credentials
+
+
+from datetime import datetime
+
+# current date and time
+now = datetime.now()
+timestamp = datetime.timestamp(now)
+
+print(timestamp)

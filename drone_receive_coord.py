@@ -9,6 +9,8 @@ import math
 import numpy as np
 import random
 from tb_device_mqtt import ProvisionClient, TBDeviceMqttClient, TBPublishInfo
+import sys
+from datetime import datetime
 
 """
 We are going to imagine that the station that detects strange things coordinates are:
@@ -19,9 +21,14 @@ and the basestation is on:
 
 print("Executing drone routine!!!")
 
+print(sys.argv[1])
+argvs=json.loads(sys.argv[1])
 
-station_coord=[40.705257, -3.894895]
-number=1
+#print(sys.argv[1].params)
+
+
+station_coord=[float(argvs['params']['latitude']), float(argvs['params']['longitude'])]
+number=argvs['params']['drone_number']
 
 
 # def calculateDistance(x1, y1, x2, y2):
@@ -66,8 +73,6 @@ client = TBDeviceMqttClient("srv-iot.diatel.upm.es", port=8883, token=utils.read
 client.connect(tls=True)
 # Sending telemetry without checking the delivery status
 client.send_telemetry(telemetry_drone) 
-# Sending telemetry and checking the delivery status (QoS = 1 by default)
-result = client.send_telemetry(telemetry_drone, 0)
 
 
 latitudes=None
@@ -101,11 +106,40 @@ for radius in [0.015, 0.032]:
         telemetry_drone["drone_latitude"]=station_coord[0]+circunf_points[i][0]
         telemetry_drone["drone_longitude"]=station_coord[1]+circunf_points[i][1]
         telemetry_drone["drone_ battery"]=telemetry_drone["drone_battery"]-1
+        if random.randint(0,100)>95:#if fire detected, provision and send telemetry 
+            telemetry_drone['drone_isFireDetected']=True
+            
         result = client.send_telemetry(telemetry_drone, 0)
-        #print(telemetry_drone)
+        sleep(1)
 
+        #print(telemetry_drone)
+        if telemetry_drone["drone_isFireDetected"]==True:
+            telemetry_drone["drone_isFireDetected"]=False
+            now = datetime.now()
+            timestamp = datetime.timestamp(now)
+            provision_req_1={
+                "deviceName": "Firention_Drone_Fire_"+str(timestamp),
+                "provisionDeviceKey": "cphh90g9cp459goa5z5y",
+                "provisionDeviceSecret": "srnpo47xqo6yx8tlqbk9"
+                }
+            provision_client2=PC("srv-iot.diatel.upm.es", port=8883, provision_request=provision_req_1, credentials="generated/drones/cred_drone_fire_"+str(number))
+            provision_client2.tls_set_context(ssl.create_default_context())
+            provision_client2.provision()
+
+            telemetry_fire={
+                "ts":timestamp,
+                "latitude":telemetry_drone["drone_latitude"],
+                "longitude":telemetry_drone["drone_longitude"],
+                "intensity":random.randint(0,5) #for example, 5 levels of intensity
+            }
+
+            client2 = TBDeviceMqttClient("srv-iot.diatel.upm.es", port=8883, token=utils.read_cred("generated/drones/cred_drone_fire_"+str(number)))
+            # Connect to ThingsBoard
+            client2.connect(tls=True)
+            # Sending telemetry without checking the delivery status
+            client2.send_telemetry(telemetry_fire) 
+            client2.disconnect()
         # get is a blocking call that awaits delivery status  
-        sleep(2)
 """
 3.-Return to the drone station
 """
@@ -132,8 +166,7 @@ telemetry_drone={
     "drone_isFireDetected":False
 }
 
-if random.randint(0,10)>7:
-    telemetry_drone['drone_isFireDetected']=True
+
 
 result = client.send_telemetry(telemetry_drone, 1)
 # get is a blocking call that awaits delivery status  

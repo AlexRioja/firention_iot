@@ -28,7 +28,7 @@ argvs=json.loads(sys.argv[1])
 
 
 station_coord=[float(argvs['params']['latitude']), float(argvs['params']['longitude'])]
-number=argvs['params']['drone_number']
+number=int(argvs['params']['drone_number'])
 
 
 # def calculateDistance(x1, y1, x2, y2):
@@ -106,7 +106,7 @@ for radius in [0.015, 0.032]:
         telemetry_drone["drone_latitude"]=station_coord[0]+circunf_points[i][0]
         telemetry_drone["drone_longitude"]=station_coord[1]+circunf_points[i][1]
         telemetry_drone["drone_ battery"]=telemetry_drone["drone_battery"]-1
-        if random.randint(0,100)>95:#if fire detected, provision and send telemetry 
+        if random.randint(0,100)>98:#if fire detected, provision and send telemetry 
             telemetry_drone['drone_isFireDetected']=True
             
         result = client.send_telemetry(telemetry_drone, 0)
@@ -130,7 +130,7 @@ for radius in [0.015, 0.032]:
                 "ts":timestamp,
                 "latitude":telemetry_drone["drone_latitude"],
                 "longitude":telemetry_drone["drone_longitude"],
-                "intensity":random.randint(0,5) #for example, 5 levels of intensity
+                "intensity":random.randint(1,5) #for example, 5 levels of intensity
             }
 
             client2 = TBDeviceMqttClient("srv-iot.diatel.upm.es", port=8883, token=utils.read_cred("generated/drones/cred_drone_fire_"+str(number)))

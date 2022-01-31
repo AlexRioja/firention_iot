@@ -12,12 +12,6 @@ from tb_device_mqtt import ProvisionClient, TBDeviceMqttClient, TBPublishInfo
 import sys
 from datetime import datetime
 
-"""
-We are going to imagine that the station that detects strange things coordinates are:
-40.705257, -3.894895
-and the basestation is on:
-40.717419, -3.918600
-"""
 
 print("Executing drone routine!!!")
 
@@ -117,8 +111,9 @@ for radius in [0.015, 0.032]:
             telemetry_drone["drone_isFireDetected"]=False
             now = datetime.now()
             timestamp = datetime.timestamp(now)
+            timestamp_humanReadable=datetime.utcfromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
             provision_req_1={
-                "deviceName": "Firention_Drone_Fire_"+str(timestamp),
+                "deviceName": "Firention_Drone_Fire_"+str(timestamp_humanReadable),
                 "provisionDeviceKey": "cphh90g9cp459goa5z5y",
                 "provisionDeviceSecret": "srnpo47xqo6yx8tlqbk9"
                 }
@@ -127,7 +122,7 @@ for radius in [0.015, 0.032]:
             provision_client2.provision()
 
             telemetry_fire={
-                "ts":timestamp,
+                "ts":timestamp_humanReadable,
                 "latitude":telemetry_drone["drone_latitude"],
                 "longitude":telemetry_drone["drone_longitude"],
                 "intensity":random.randint(1,5) #for example, 5 levels of intensity

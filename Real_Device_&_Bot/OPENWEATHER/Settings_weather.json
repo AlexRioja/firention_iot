@@ -1,0 +1,15 @@
+{
+	
+	"URL":"https://srv-iot.diatel.upm.es",
+	"USERNAME": "riccardo.n@alumnos.upm.es",
+	"PASSWORD":"HOLA",
+	"API_KEY":"9610b31fdddd66b4996bced8d699de4d",
+	"EXCLUDE": "minutely,hourly,daily,alerts",
+	"UNITS":"metric",
+	"LANG" : "en",
+	
+	"STATION_NUMBER":5
+	
+
+
+}

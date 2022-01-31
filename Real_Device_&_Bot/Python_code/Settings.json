@@ -1,0 +1,10 @@
+{
+	"URL":"https://srv-iot.diatel.upm.es",
+	"USERNAME": "riccardo.n@alumnos.upm.es",
+	"PASSWORD":"HOLA",
+	
+
+	"ENCODING": "utf-8",
+	"SERIAL_PORT": "/dev/ttyUSB0",
+	"STATION_NAME": "SubStation005"
+}
